@@ -1,3 +1,5 @@
+package com.example.headphonepopup
+
 import android.Manifest
 import android.animation.ObjectAnimator
 import android.animation.PropertyValuesHolder
@@ -26,7 +28,6 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 
-// 1. ГЛАВНЫЙ ЭКРАН (Настройка разрешений и тест)
 class MainActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -68,13 +69,11 @@ class MainActivity : Activity() {
     }
 
     private fun requestNeededPermissions() {
-        // Разрешение на Bluetooth для Android 12+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             if (checkSelfPermission(Manifest.permission.BLUETOOTH_CONNECT) != PackageManager.PERMISSION_GRANTED) {
                 requestPermissions(arrayOf(Manifest.permission.BLUETOOTH_CONNECT), 101)
             }
         }
-        // Разрешение "Поверх других окон" (нужно для показа из фона)
         if (!Settings.canDrawOverlays(this)) {
             Toast.makeText(this, "Включи разрешение «Поверх других окон»", Toast.LENGTH_LONG).show()
             val intent = Intent(
@@ -88,7 +87,6 @@ class MainActivity : Activity() {
     }
 }
 
-// 2. ВСПЛЫВАЮЩЕЕ ОКНО С АНИМАЦИЕЙ
 class PopupActivity : Activity() {
     private val handler = Handler(Looper.getMainLooper())
 
@@ -97,30 +95,25 @@ class PopupActivity : Activity() {
 
         val deviceName = intent.getStringExtra("DEVICE_NAME") ?: "Беспроводные наушники"
 
-        // Полупрозрачный фон на весь экран (закрывается при касании мимо карточки)
         val root = FrameLayout(this).apply {
             setBackgroundColor(Color.parseColor("#66000000"))
             setOnClickListener { closeWithAnimation() }
         }
 
-        // Сама карточка внизу экрана
         val cardBg = GradientDrawable().apply {
             setColor(Color.parseColor("#1E1E26"))
             cornerRadius = 72f
             setStroke(3, Color.parseColor("#383846"))
         }
 
-        val card = Linear
-
-
-Layout(this).apply {
+        val card = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             gravity = Gravity.CENTER_HORIZONTAL
             background = cardBg
             setPadding(64, 72, 64, 64)
             elevation = 32f
-            translationY = 1000f // Прячем карточку вниз перед стартом анимации
-            setOnClickListener { /* Игнорируем клик внутри карточки */ }
+            translationY = 1000f
+            setOnClickListener { }
         }
 
         val cardParams = FrameLayout.LayoutParams(
@@ -131,7 +124,6 @@ Layout(this).apply {
             setMargins(48, 0, 48, 80)
         }
 
-        // Иконка наушников с пульсацией
         val iconView = TextView(this).apply {
             text = "🎧"
             textSize = 64f
@@ -176,14 +168,12 @@ Layout(this).apply {
         root.addView(card, cardParams)
         setContentView(root)
 
-        // Пружинистый выезд карточки снизу
         card.animate()
             .translationY(0f)
             .setDuration(550)
             .setInterpolator(OvershootInterpolator(1.1f))
             .start()
 
-        // Анимация появления и покачивания наушников
         val scaleX = PropertyValuesHolder.ofFloat(View.SCALE_X, 0f, 1.15f, 1f)
         val scaleY = PropertyValuesHolder.ofFloat(View.SCALE_Y, 0f, 1.15f, 1f)
         val rotation = PropertyValuesHolder.ofFloat(View.ROTATION, -15f, 10f, 0f)
@@ -193,7 +183,6 @@ Layout(this).apply {
             start()
         }
 
-        // Автозакрытие через 4.5 секунды
         handler.postDelayed({ closeWithAnimation() }, 4500)
     }
 
@@ -217,21 +206,18 @@ Layout(this).apply {
     }
 }
 
-// 3. ФОНОВЫЙ ПЕРЕХВАТЧИК ПОДКЛЮЧЕНИЯ BLUETOOTH
 class BtReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         if (intent.action == BluetoothDevice.ACTION_ACL_CONNECTED) {
             val device: BluetoothDevice? = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE, BluetoothDevice::class.java)
             } else {
-                "DEPRECATION"
+                @Suppress("DEPRECATION")
                 intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE)
             }
 
             val deviceName = try {
-
-
-device?.name ?: "Наушники"
+                device?.name ?: "Наушники"
             } catch (e: SecurityException) {
                 "Наушники"
             }
@@ -244,5 +230,3 @@ device?.name ?: "Наушники"
         }
     }
 }
-
-
