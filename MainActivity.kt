@@ -640,7 +640,7 @@ class VivoHeadphonesView(context: Context) : View(context) {
 
 class BtReceiver : BroadcastReceiver() {
 
-    override fun onReceive(context: Context, intent: Intent) {
+    override fun onReceive("Naushniki", "onReceive: ${intent.action}") {
         if (intent.action != BluetoothDevice.ACTION_ACL_CONNECTED) return
 
         val device: BluetoothDevice? =
@@ -675,7 +675,7 @@ class BtReceiver : BroadcastReceiver() {
 
         try {
             context.startActivity(popup)
-        } catch (_: Exception) {
+        } catch (e: Exception) {log.e("Naushniki", "popup failed", e) }
             // Android may restrict activity launches from background receivers.
         }
     }
